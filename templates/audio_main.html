@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto mt-8 px-4 sm:px-6">
+    <h4 class="text-2xl font-extrabold text-gray-900 mb-6 border-l-4 border-blue-500 pl-3">
+        🎧 어느 지역을 방문하셨나요?
+    </h4>
+
+    <div class="flex flex-col gap-3">
+        {% for region in regions %}
+            <a href="{{ url_for('region_detail', region_id=region.id) }}" class="block bg-white border border-gray-200 rounded-xl p-5 shadow-sm hover:shadow-md hover:border-blue-300 hover:bg-blue-50 transition-all text-lg font-bold text-gray-800 group">
+                <div class="flex justify-between items-center">
+                    <span>{{ region.name }}</span>
+                    <span class="bg-blue-100 text-blue-700 text-xs px-3 py-1 rounded-full font-bold group-hover:bg-blue-600 group-hover:text-white transition-colors">선택</span>
+                </div>
+            </a>
+        {% else %}
+            <div class="bg-gray-50 p-8 rounded-xl border border-gray-200 text-center shadow-inner">
+                <p class="text-gray-500 font-medium">등록된 오디오 가이드 지역이 없습니다.</p>
+            </div>
+        {% endfor %}
+    </div>
+<br>
+    <div class="relative group overflow-hidden rounded-2xl shadow-sm border border-gray-100 bg-gray-50">
+            <img src="/static/europe/spain.jpg"
+                 class="w-full h-auto block transition-transform duration-500 group-hover:scale-105"
+                 alt="스페인 사그라다 파밀리아 성가족 성당">
+    </div>
+</div>
+{% endblock %}

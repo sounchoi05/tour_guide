@@ -1,0 +1,206 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto mt-8 px-4 pb-20">
+{% if current_user.is_authenticated %}
+    <div class="bg-white rounded-3xl shadow-sm border border-gray-100 p-6 mb-8 flex flex-col md:flex-row justify-between items-center gap-6">
+        <div>
+            <h2 class="text-2xl font-extrabold text-gray-900 border-l-4 border-green-500 pl-3">💰 여행 가계부</h2>
+            <p class="text-sm text-gray-500 mt-1 ml-4">모든 지출 통합 합계 (전일자 환율 반영)</p>
+        </div>
+        <div class="flex gap-4 items-center">
+            {% set grand_total = namespace(krw=0, eur=0) %}
+            {% for ex in expenses %}
+                {% set r_eur = rates_by_date[ex.date]['eur'] %}
+                {% set r_usd = rates_by_date[ex.date]['usd'] %}
+
+                {% if ex.currency == 'KRW' %}
+                    {% set grand_total.krw = grand_total.krw + ex.amount %}
+                    {% set grand_total.eur = grand_total.eur + (ex.amount / r_eur) %}
+                {% elif ex.currency == 'EUR' %}
+                    {% set grand_total.krw = grand_total.krw + (ex.amount * r_eur) %}
+                    {% set grand_total.eur = grand_total.eur + ex.amount %}
+                {% elif ex.currency == 'USD' %}
+                    {% set grand_total.krw = grand_total.krw + (ex.amount * r_usd) %}
+                    {% set grand_total.eur = grand_total.eur + ((ex.amount * r_usd) / r_eur) %}
+                {% endif %}
+            {% endfor %}
+
+            <div class="text-center">
+                <p class="text-xs font-bold text-gray-400 uppercase">Total EUR</p>
+                <p class="text-2xl font-black text-orange-600">€{{ "{:,.2f}".format(grand_total.eur) }}</p>
+            </div>
+            <div class="w-px h-12 bg-gray-200"></div>
+            <div class="text-center">
+                <p class="text-xs font-bold text-gray-400 uppercase">Total KRW</p>
+                <p class="text-2xl font-black text-green-700">₩{{ "{:,.0f}".format(grand_total.krw) }}</p>
+            </div>
+        </div>
+    </div>
+{% endif %}
+    {% if current_user.is_authenticated %}
+    <div class="flex justify-end mb-6">
+        <button onclick="openAddForm()" class="bg-green-600 hover:bg-green-700 text-white px-6 py-3 rounded-2xl font-bold shadow-lg transition-all flex items-center gap-2">
+            <i class="fas fa-plus"></i> 지출 기록하기
+        </button>
+    </div>
+    {% endif %}
+
+    <div class="space-y-10">
+        {% for date, items in expenses|groupby('date')|reverse %}
+        <div class="space-y-4">
+
+            {% set r_eur = rates_by_date[date]['eur'] %}
+            {% set r_usd = rates_by_date[date]['usd'] %}
+            {% set ref_date = rates_by_date[date]['date'] %}
+
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between ml-2 gap-2">
+                <h3 class="text-lg font-bold text-gray-800 flex items-center gap-2">
+                    <i class="far fa-calendar-check text-green-500"></i> {{ date }}
+                </h3>
+                <span class="text-xs font-bold text-blue-600 bg-blue-50 px-3 py-1.5 rounded-full border border-blue-100 w-fit">
+                    💱 {{ ref_date }} 기준 환율 : 1€ = {{ "{:,.0f}".format(r_eur) }}원 / 1$ = {{ "{:,.0f}".format(r_usd) }}원
+                </span>
+            </div>
+
+            {% set day_total = namespace(krw=0, eur=0) %}
+
+            {% for ex in items %}
+                {% if ex.currency == 'KRW' %}
+                    {% set day_total.krw = day_total.krw + ex.amount %}
+                    {% set day_total.eur = day_total.eur + (ex.amount / r_eur) %}
+                {% elif ex.currency == 'EUR' %}
+                    {% set day_total.krw = day_total.krw + (ex.amount * r_eur) %}
+                    {% set day_total.eur = day_total.eur + ex.amount %}
+                {% elif ex.currency == 'USD' %}
+                    {% set day_total.krw = day_total.krw + (ex.amount * r_usd) %}
+                    {% set day_total.eur = day_total.eur + ((ex.amount * r_usd) / r_eur) %}
+                {% endif %}
+
+                <div class="bg-white rounded-2xl border border-gray-100 shadow-sm p-5 flex justify-between items-center group transition-all hover:border-green-200">
+                    <div class="flex-1 cursor-pointer" onclick="openEditForm('{{ ex.id }}', '{{ ex.date }}', '{{ ex.time }}', '{{ ex.region }}', '{{ ex.place }}', '{{ ex.category }}', '{{ ex.amount }}', '{{ ex.currency }}')">
+                        <div class="text-xs font-bold text-gray-400 mb-1">{{ ex.time }} · {{ ex.region }}</div>
+                        <div class="text-lg font-bold text-gray-800 group-hover:text-green-700 transition-colors">{{ ex.place }}</div>
+                        <div class="text-sm text-gray-500">{{ ex.category }}</div>
+                    </div>
+
+                    <div class="text-right cursor-pointer" onclick="openEditForm('{{ ex.id }}', '{{ ex.date }}', '{{ ex.time }}', '{{ ex.region }}', '{{ ex.place }}', '{{ ex.category }}', '{{ ex.amount }}', '{{ ex.currency }}')">
+                        <div class="text-xl font-black text-gray-900">
+                            {{ "€" if ex.currency == 'EUR' else ("$" if ex.currency == 'USD' else "₩") }}
+                            {{ "{:,.2f}".format(ex.amount) if ex.currency != 'KRW' else "{:,.0f}".format(ex.amount) }}
+                        </div>
+                        <div class="text-[11px] text-gray-400 font-medium mt-0.5 tracking-tight">
+                            {% if ex.currency == 'KRW' %}
+                                €{{ "{:,.2f}".format(ex.amount / r_eur) }} / ${{ "{:,.2f}".format(ex.amount / r_usd) }}
+                            {% elif ex.currency == 'EUR' %}
+                                ₩{{ "{:,.0f}".format(ex.amount * r_eur) }} / ${{ "{:,.2f}".format((ex.amount * r_eur) / r_usd) }}
+                            {% elif ex.currency == 'USD' %}
+                                ₩{{ "{:,.0f}".format(ex.amount * r_usd) }} / €{{ "{:,.2f}".format((ex.amount * r_usd) / r_eur) }}
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+
+            <div class="bg-gray-50/50 rounded-2xl p-4 flex justify-between items-center text-sm border border-dashed border-gray-200">
+                <div class="text-gray-500 font-bold uppercase text-xs tracking-wider">Day Total</div>
+                <div class="flex gap-4">
+                    <div class="font-bold text-orange-600">€{{ "{:,.2f}".format(day_total.eur) }}</div>
+                    <div class="text-gray-300">|</div>
+                    <div class="font-bold text-green-700">₩{{ "{:,.0f}".format(day_total.krw) }}</div>
+                </div>
+            </div>
+        </div>
+        {% else %}
+        <div class="text-center py-20 bg-gray-50 rounded-3xl border-2 border-dashed border-gray-200">
+            <p class="text-gray-400 font-medium text-lg">기록된 지출이 없습니다.</p>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+
+<div id="expenseModal" class="fixed inset-0 z-[2000] hidden bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="bg-white w-full max-w-lg rounded-3xl shadow-2xl overflow-hidden animate-fade-in-up">
+        <div class="bg-green-600 p-6 flex justify-between items-center text-white">
+            <h3 id="modalTitle" class="text-xl font-bold">지출 내역 기록</h3>
+            <button onclick="closeModal()" class="text-2xl font-bold">&times;</button>
+        </div>
+        <form id="expenseForm" method="POST" action="/admin/add_expense" class="p-6 space-y-4">
+            <div class="grid grid-cols-2 gap-4">
+                <div>
+                    <label class="block text-xs font-bold text-gray-500 mb-1 uppercase">날짜</label>
+                    <input type="date" name="date" id="form_date" required class="w-full border-gray-200 rounded-xl p-3 bg-gray-50 focus:bg-white focus:ring-2 focus:ring-green-500 outline-none transition-all">
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-gray-500 mb-1 uppercase">시간</label>
+                    <input type="time" name="time" id="form_time" class="w-full border-gray-200 rounded-xl p-3 bg-gray-50 focus:bg-white focus:ring-2 focus:ring-green-500 outline-none transition-all">
+                </div>
+            </div>
+            <div class="grid grid-cols-3 gap-2">
+                <input type="text" name="region" id="form_region" placeholder="지역" class="col-span-1 border-gray-200 rounded-xl p-3 bg-gray-50 focus:bg-white focus:ring-2 focus:ring-green-500 outline-none transition-all">
+                <input type="text" name="place" id="form_place" placeholder="장소명 (식당, 마트 등)" class="col-span-2 border-gray-200 rounded-xl p-3 bg-gray-50 focus:bg-white focus:ring-2 focus:ring-green-500 outline-none transition-all">
+            </div>
+            <input type="text" name="category" id="form_category" placeholder="용도 (예: 식비, 통행료, 주유)" class="w-full border-gray-200 rounded-xl p-3 bg-gray-50 focus:bg-white focus:ring-2 focus:ring-green-500 outline-none transition-all">
+            <div class="grid grid-cols-3 gap-2">
+                <input type="number" step="0.01" name="amount" id="form_amount" placeholder="금액" required class="col-span-2 border-gray-200 rounded-xl p-3 bg-gray-50 focus:bg-white focus:ring-2 focus:ring-green-500 outline-none transition-all text-lg font-bold">
+                <select name="currency" id="form_currency" class="col-span-1 border-gray-200 rounded-xl p-3 bg-gray-50 focus:bg-white font-bold outline-none">
+                    <option value="EUR">€ EUR</option>
+                    <option value="KRW">₩ KRW</option>
+                    <option value="USD">$ USD</option>
+                </select>
+            </div>
+
+            <div class="pt-4 flex flex-col gap-3">
+                <button type="submit" class="w-full bg-green-600 text-white font-black py-4 rounded-2xl shadow-lg hover:bg-green-700 transition-all">저장하기</button>
+                <div id="deleteBtnContainer" class="hidden">
+                    <a id="deleteLink" href="#" onclick="return confirm('정말 삭제할까요?')" class="block w-full text-center text-red-500 font-bold py-2 hover:underline">기록 삭제하기</a>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+    const modal = document.getElementById('expenseModal');
+    const form = document.getElementById('expenseForm');
+    const modalTitle = document.getElementById('modalTitle');
+    const deleteBtnContainer = document.getElementById('deleteBtnContainer');
+    const deleteLink = document.getElementById('deleteLink');
+
+    function openAddForm() {
+        modalTitle.innerText = "지출 내역 기록";
+        form.action = "/admin/add_expense";
+        form.reset();
+        document.getElementById('form_date').value = new Date().toISOString().substring(0, 10);
+        deleteBtnContainer.classList.add('hidden');
+        modal.classList.remove('hidden');
+    }
+
+    function openEditForm(id, date, time, region, place, category, amount, currency) {
+        {% if current_user.is_authenticated %}
+        modalTitle.innerText = "지출 내역 수정";
+        form.action = "/admin/edit_expense/" + id;
+
+        document.getElementById('form_date').value = date;
+        document.getElementById('form_time').value = time;
+        document.getElementById('form_region').value = region;
+        document.getElementById('form_place').value = place;
+        document.getElementById('form_category').value = category;
+        document.getElementById('form_amount').value = amount;
+        document.getElementById('form_currency').value = currency;
+
+        deleteLink.href = "/admin/delete_expense/" + id;
+        deleteBtnContainer.classList.remove('hidden');
+        modal.classList.remove('hidden');
+        {% endif %}
+    }
+
+    function closeModal() {
+        modal.classList.add('hidden');
+    }
+
+    window.onclick = function(event) {
+        if (event.target == modal) closeModal();
+    }
+</script>
+{% endblock %}

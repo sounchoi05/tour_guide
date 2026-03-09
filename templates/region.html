@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto mt-8 px-4 sm:px-6">
+    <nav class="flex text-sm text-gray-500 mb-6" aria-label="Breadcrumb">
+        <ol class="inline-flex items-center space-x-1 md:space-x-3">
+            <li class="inline-flex items-center">
+                <a href="/" class="hover:text-orange-600 font-medium transition-colors">
+                    🏠 처음으로
+                </a>
+            </li>
+            <li>
+                <div class="flex items-center">
+                    <span class="mx-2 text-gray-400">/</span>
+                    <span class="text-gray-800 font-bold">{{ region.name }}</span>
+                </div>
+            </li>
+        </ol>
+    </nav>
+
+    <h4 class="text-2xl font-extrabold text-gray-900 mb-5 border-l-4 border-orange-500 pl-3">
+        {{ region.name }}의 관광지/세부 일정
+    </h4>
+
+    <div class="flex flex-col gap-3">
+        {% for attraction in region.attractions %}
+            <a href="{{ url_for('attraction_detail', attraction_id=attraction.id) }}" 
+               class="block bg-white border border-gray-200 rounded-xl p-5 shadow-sm hover:shadow-md hover:border-orange-300 hover:bg-orange-50 transition-all text-lg font-bold text-gray-800 group">
+                <div class="flex justify-between items-center">
+                    <span>📍 {{ attraction.name }}</span>
+                    <span class="text-gray-400 group-hover:text-orange-500 transition-colors">➔</span>
+                </div>
+            </a>
+        {% else %}
+            <div class="bg-gray-50 p-8 rounded-xl border border-gray-200 text-center">
+                <p class="text-gray-500 font-medium">이 지역에 등록된 항목이 없습니다.</p>
+            </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

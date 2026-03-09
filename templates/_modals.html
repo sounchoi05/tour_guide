@@ -1,0 +1,365 @@
+<div id="itineraryModal" class="fixed inset-0 z-[2000] hidden bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="bg-white w-full max-w-4xl max-h-[90vh] rounded-3xl shadow-2xl overflow-hidden flex flex-col animate-fade-in-up">
+
+        <div class="bg-orange-600 p-5 flex justify-between items-center text-white shrink-0">
+            <h3 class="text-lg font-bold flex items-center gap-2"><span>🗺️</span> 새 도시 일정 등록</h3>
+            <button onclick="closeItineraryModal()" class="text-2xl font-bold hover:text-orange-200 transition-colors">&times;</button>
+        </div>
+
+        <form action="/admin/add_itinerary" method="POST" id="addItineraryForm" class="p-6 overflow-y-auto space-y-6 flex-1">
+
+            <div class="bg-orange-50 p-4 rounded-xl border border-orange-100">
+                <h4 class="font-bold text-orange-800 mb-3">1. 기본 정보</h4>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div><label class="block text-xs font-bold text-gray-600 mb-1">고유 ID (예: bcn_day1)</label><input type="text" name="id" required class="w-full border p-2 rounded-lg"></div>
+                    <div><label class="block text-xs font-bold text-gray-600 mb-1">도시명</label><input type="text" name="city" required class="w-full border p-2 rounded-lg"></div>
+                    <div><label class="block text-xs font-bold text-gray-600 mb-1">일시 (예: 4/8 - 4/10)</label><input type="text" name="period" required class="w-full border p-2 rounded-lg"></div>
+                    <div><label class="block text-xs font-bold text-gray-600 mb-1">숙박기간 (예: 2박)</label><input type="text" name="nights" required class="w-full border p-2 rounded-lg"></div>
+                    <div class="md:col-span-2"><label class="block text-xs font-bold text-gray-600 mb-1">일정 요약 설명</label><textarea name="desc" rows="2" class="w-full border p-2 rounded-lg"></textarea></div>
+
+                </div>
+            </div>
+
+            <div class="bg-gray-50 p-4 rounded-xl border border-gray-200">
+                <h4 class="font-bold text-gray-800 mb-3">2. 세부 설명 및 추천 스팟</h4>
+                <div class="grid grid-cols-1 gap-4">
+                    <div><label class="block text-xs font-bold text-gray-600 mb-1">여행 팁 (Tips)</label><textarea name="tips" rows="2" class="w-full border p-2 rounded-lg"></textarea></div>
+                    <div><label class="block text-xs font-bold text-gray-600 mb-1">숙소 정보</label><input type="text" name="stay" class="w-full border p-2 rounded-lg"></div>
+                    <div>
+                        <input type="checkbox" name="hasParking" id="hasParking" value="1" class="w-5 h-5">
+                        <label for="hasParking" class="text-sm font-bold text-gray-700">숙소 주차장 있음</label>
+                    </div>
+                    <div><label class="block text-xs font-bold text-gray-600 mb-1">주차 정보 (공영주차장 등)</label><textarea name="parkingInfo" rows="2" class="w-full border p-2 rounded-lg"></textarea></div>
+                    <div><label class="block text-xs font-bold text-gray-600 mb-1">추천 음식/맛집</label><textarea name="foodRecs" rows="2" class="w-full border p-2 rounded-lg"></textarea></div>
+                    <div><label class="block text-xs font-bold text-gray-600 mb-1">가성비 식사</label><textarea name="under10" rows="2" class="w-full border p-2 rounded-lg"></textarea></div>
+                    <div><label class="block text-xs font-bold text-gray-600 mb-1">추천 스팟</label><textarea name="spotRecs" rows="2" class="w-full border p-2 rounded-lg"></textarea></div>
+                    <div><label class="block text-xs font-bold text-gray-600 mb-1">쇼핑/기념품</label><textarea name="shoppingRecs" rows="2" class="w-full border p-2 rounded-lg"></textarea></div>
+                </div>
+            </div>
+
+            <div class="bg-blue-50 p-4 rounded-xl border border-blue-100">
+                <h4 class="font-bold text-blue-800 mb-3">3. 동선 및 구글 맵</h4>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div class="md:col-span-2"><label class="block text-xs font-bold text-gray-600 mb-1">경로 설명 1</label><input type="text" name="routeText" class="w-full border p-2 rounded-lg"></div>
+                    <div><label class="block text-xs font-bold text-gray-600 mb-1">지도 링크 1</label><input type="text" name="mapLink" class="w-full border p-2 rounded-lg"></div>
+                    <div><label class="block text-xs font-bold text-gray-600 mb-1">지도 Iframe 1</label><input type="text" name="mapIframe" class="w-full border p-2 rounded-lg"></div>
+
+                    <div class="md:col-span-2"><label class="block text-xs font-bold text-gray-600 mb-1">경로 설명 2</label><input type="text" name="routeText2" class="w-full border p-2 rounded-lg"></div>
+                    <div><label class="block text-xs font-bold text-gray-600 mb-1">지도 링크 2</label><input type="text" name="mapLink2" class="w-full border p-2 rounded-lg"></div>
+                    <div><label class="block text-xs font-bold text-gray-600 mb-1">지도 Iframe 2</label><input type="text" name="mapIframe2" class="w-full border p-2 rounded-lg"></div>
+                </div>
+            </div>
+
+            <div class="bg-green-50 p-4 rounded-xl border border-green-100">
+                <div class="flex justify-between items-center mb-3">
+                    <h4 class="font-bold text-green-800">4. 주요 일정</h4>
+                    <button type="button" onclick="addScheduleRow()" class="bg-green-600 text-white px-2 py-1 rounded text-xs font-bold">+ 일정 추가</button>
+                </div>
+                <div id="scheduleContainer" class="space-y-2">
+                    </div>
+                <input type="hidden" name="schedule_json" id="schedule_json">
+            </div>
+
+            <div class="bg-purple-50 p-4 rounded-xl border border-purple-100">
+                <div class="flex justify-between items-center mb-3">
+                    <h4 class="font-bold text-purple-800">5. 갤러리 사진</h4>
+                    <button type="button" onclick="addPhotoRow()" class="bg-purple-600 text-white px-2 py-1 rounded text-xs font-bold">+ 사진 추가</button>
+                </div>
+                <div id="photoContainer" class="space-y-2">
+                    </div>
+                <input type="hidden" name="photos_json" id="photos_json">
+            </div>
+
+            <div class="pt-4 flex gap-2 sticky bottom-0 bg-white border-t p-4 -mx-6 -mb-6 mt-4">
+                <button type="button" onclick="closeItineraryModal()" class="w-1/3 bg-gray-100 text-gray-700 font-bold py-3 rounded-xl hover:bg-gray-200">취소</button>
+                <button type="submit" class="w-2/3 bg-orange-600 text-white font-black py-3 rounded-xl shadow-lg hover:bg-orange-700">일정 등록하기</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div id="editItineraryModal" class="fixed inset-0 z-[2000] hidden bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="bg-white w-full max-w-4xl max-h-[90vh] rounded-3xl shadow-2xl overflow-hidden flex flex-col animate-fade-in-up">
+
+        <div class="bg-indigo-600 p-5 flex justify-between items-center text-white shrink-0">
+            <h3 class="text-lg font-bold flex items-center gap-2"><span>✏️</span> 도시 일정 수정</h3>
+            <button onclick="closeEditModal()" class="text-2xl font-bold hover:text-indigo-200 transition-colors">&times;</button>
+        </div>
+
+        <form action="" method="POST" id="editItineraryForm" class="p-6 overflow-y-auto space-y-6 flex-1">
+            <div class="bg-indigo-50 p-4 rounded-xl border border-indigo-100">
+                <h4 class="font-bold text-indigo-800 mb-3">1. 기본 정보</h4>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div><label class="block text-xs font-bold text-gray-600 mb-1">고유 ID (수정불가)</label><input type="text" name="id" readonly class="w-full border p-2 rounded-lg bg-gray-100 text-gray-500"></div>
+                    <div><label class="block text-xs font-bold text-gray-600 mb-1">도시명</label><input type="text" name="city" required class="w-full border p-2 rounded-lg"></div>
+                    <div><label class="block text-xs font-bold text-gray-600 mb-1">일시 (예: 4/8 - 4/10)</label><input type="text" name="period" required class="w-full border p-2 rounded-lg"></div>
+                    <div><label class="block text-xs font-bold text-gray-600 mb-1">숙박기간 (예:2박)</label><input type="text" name="nights" required class="w-full border p-2 rounded-lg"></div>
+                    <div class="md:col-span-2"><label class="block text-xs font-bold text-gray-600 mb-1">일정 요약 설명</label><textarea name="desc" rows="2" class="w-full border p-2 rounded-lg"></textarea></div>
+                </div>
+            </div>
+
+            <div class="bg-gray-50 p-4 rounded-xl border border-gray-200">
+                <h4 class="font-bold text-gray-800 mb-3">2. 세부 설명 및 추천 스팟</h4>
+                <div class="grid grid-cols-1 gap-4">
+                    <div><label class="block text-xs font-bold text-gray-600 mb-1">여행 팁 (Tips)</label><textarea name="tips" rows="2" class="w-full border p-2 rounded-lg"></textarea></div>
+                    <div><label class="block text-xs font-bold text-gray-600 mb-1">숙소 정보</label><input type="text" name="stay" class="w-full border p-2 rounded-lg"></div>
+                    <div>
+                        <input type="checkbox" name="hasParking" id="edit_hasParking" value="1" class="w-5 h-5">
+                        <label for="edit_hasParking" class="text-sm font-bold text-gray-700">숙소 주차장 있음</label>
+                    </div>
+                    <div><label class="block text-xs font-bold text-gray-600 mb-1">주차 정보</label><textarea name="parkingInfo" rows="2" class="w-full border p-2 rounded-lg"></textarea></div>
+                    <div><label class="block text-xs font-bold text-gray-600 mb-1">추천 음식/맛집</label><textarea name="foodRecs" rows="2" class="w-full border p-2 rounded-lg"></textarea></div>
+                    <div><label class="block text-xs font-bold text-gray-600 mb-1">가성비 식사</label><textarea name="under10" rows="2" class="w-full border p-2 rounded-lg"></textarea></div>
+                    <div><label class="block text-xs font-bold text-gray-600 mb-1">추천 스팟</label><textarea name="spotRecs" rows="2" class="w-full border p-2 rounded-lg"></textarea></div>
+                    <div><label class="block text-xs font-bold text-gray-600 mb-1">쇼핑/기념품</label><textarea name="shoppingRecs" rows="2" class="w-full border p-2 rounded-lg"></textarea></div>
+                </div>
+            </div>
+
+            <div class="bg-blue-50 p-4 rounded-xl border border-blue-100">
+                <h4 class="font-bold text-blue-800 mb-3">3. 동선 및 구글 맵</h4>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div class="md:col-span-2"><label class="block text-xs font-bold text-gray-600 mb-1">경로 설명 1</label><input type="text" name="routeText" class="w-full border p-2 rounded-lg"></div>
+                    <div><label class="block text-xs font-bold text-gray-600 mb-1">지도 링크 1</label><input type="text" name="mapLink" class="w-full border p-2 rounded-lg"></div>
+                    <div><label class="block text-xs font-bold text-gray-600 mb-1">지도 Iframe 1</label><input type="text" name="mapIframe" class="w-full border p-2 rounded-lg"></div>
+
+                    <div class="md:col-span-2"><label class="block text-xs font-bold text-gray-600 mb-1">경로 설명 2</label><input type="text" name="routeText2" class="w-full border p-2 rounded-lg"></div>
+                    <div><label class="block text-xs font-bold text-gray-600 mb-1">지도 링크 2</label><input type="text" name="mapLink2" class="w-full border p-2 rounded-lg"></div>
+                    <div><label class="block text-xs font-bold text-gray-600 mb-1">지도 Iframe 2</label><input type="text" name="mapIframe2" class="w-full border p-2 rounded-lg"></div>
+                </div>
+            </div>
+
+            <div class="bg-green-50 p-4 rounded-xl border border-green-100">
+                <div class="flex justify-between items-center mb-3">
+                    <h4 class="font-bold text-green-800">4. 주요 일정</h4>
+                    <button type="button" onclick="addEditScheduleRow()" class="bg-green-600 text-white px-2 py-1 rounded text-xs font-bold">+ 일정 추가</button>
+                </div>
+                <div id="editScheduleContainer" class="space-y-2"></div>
+                <input type="hidden" name="schedule_json" id="edit_schedule_json">
+            </div>
+
+            <div class="bg-purple-50 p-4 rounded-xl border border-purple-100">
+                <div class="flex justify-between items-center mb-3">
+                    <h4 class="font-bold text-purple-800">5. 갤러리 사진</h4>
+                    <button type="button" onclick="addEditPhotoRow()" class="bg-purple-600 text-white px-2 py-1 rounded text-xs font-bold">+ 사진 추가</button>
+                </div>
+                <div id="editPhotoContainer" class="space-y-2"></div>
+                <input type="hidden" name="photos_json" id="edit_photos_json">
+            </div>
+
+            <div class="pt-4 flex gap-2 sticky bottom-0 bg-white border-t p-4 -mx-6 -mb-6 mt-4">
+                <button type="button" onclick="closeEditModal()" class="w-1/3 bg-gray-100 text-gray-700 font-bold py-3 rounded-xl hover:bg-gray-200">취소</button>
+                <button type="submit" class="w-2/3 bg-indigo-600 text-white font-black py-3 rounded-xl shadow-lg hover:bg-indigo-700">수정 내용 저장</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+    // ==========================================
+    // 1. 모달 열기/닫기 공통 함수
+    // ==========================================
+    function openItineraryModal() { document.getElementById('itineraryModal').classList.remove('hidden'); }
+    function closeItineraryModal() { document.getElementById('itineraryModal').classList.add('hidden'); }
+    function closeEditModal() { document.getElementById('editItineraryModal').classList.add('hidden'); }
+
+    // ==========================================
+    // 2. 등록(Add) 모달용 동적 행 추가 함수 (구조 변경)
+    // ==========================================
+    function addScheduleRow() {
+        const container = document.getElementById('scheduleContainer');
+        const row = document.createElement('div');
+        row.className = 'flex flex-col gap-2 p-3 border border-gray-200 rounded-lg bg-white schedule-row mb-2 shadow-sm';
+        row.innerHTML = `
+            <div class="flex gap-2 items-center">
+                <input type="text" placeholder="시간 (10:00)" class="w-1/4 border p-2 rounded-lg text-sm sched-time">
+                <input type="text" placeholder="아이콘(🏛️)" class="w-1/6 border p-2 rounded-lg text-sm sched-icon text-center">
+                <input type="text" placeholder="일정 제목 (예: 프라도 미술관)" class="flex-1 border p-2 rounded-lg text-sm sched-title font-bold">
+                <button type="button" onclick="this.closest('.schedule-row').remove()" class="text-red-500 hover:bg-red-50 rounded px-2 py-1 font-bold transition-colors">X</button>
+            </div>
+            <textarea placeholder="상세 설명 (여러 줄 입력 가능)" class="w-full border p-2 rounded-lg text-sm sched-detail" rows="2"></textarea>
+            <input type="text" placeholder="🚨 주의/안내사항 (예: 여권 지참 필수)" class="w-full border border-red-200 bg-red-50 text-red-700 p-2 rounded-lg text-sm sched-warning placeholder-red-300">
+        `;
+        container.appendChild(row);
+    }
+
+    function addPhotoRow() {
+        const container = document.getElementById('photoContainer');
+        const row = document.createElement('div');
+        row.className = 'flex gap-2 photo-row mb-2';
+        row.innerHTML = `
+            <input type="text" placeholder="이미지 URL" class="w-1/2 border p-2 rounded-lg text-sm photo-url">
+            <input type="text" placeholder="사진 설명" class="w-1/2 border p-2 rounded-lg text-sm photo-caption">
+            <button type="button" onclick="this.parentElement.remove()" class="text-red-500 hover:bg-red-50 rounded px-2 font-bold transition-colors">X</button>
+        `;
+        container.appendChild(row);
+    }
+
+    // ==========================================
+    // 3. 수정(Edit) 모달용 함수 (DB 구조 완벽 반영)
+    // ==========================================
+    function addEditScheduleRow(time = '', icon = '', title = '', detail = '', warning = '') {
+        const container = document.getElementById('editScheduleContainer');
+        const row = document.createElement('div');
+        row.className = 'flex flex-col gap-2 p-3 border border-gray-200 rounded-lg bg-white edit-schedule-row mb-2 shadow-sm';
+
+        row.innerHTML = `
+            <div class="flex gap-2 items-center">
+                <input type="text" placeholder="시간" class="w-1/4 border p-2 rounded-lg text-sm sched-time">
+                <input type="text" placeholder="아이콘" class="w-1/6 border p-2 rounded-lg text-sm sched-icon text-center">
+                <input type="text" placeholder="일정 제목" class="flex-1 border p-2 rounded-lg text-sm sched-title font-bold">
+                <button type="button" onclick="this.closest('.edit-schedule-row').remove()" class="text-red-500 hover:bg-red-50 rounded px-2 py-1 font-bold transition-colors">X</button>
+            </div>
+            <textarea placeholder="상세 설명 (여러 줄 입력 가능)" class="w-full border p-2 rounded-lg text-sm sched-detail" rows="2"></textarea>
+            <input type="text" placeholder="🚨 주의/안내사항" class="w-full border border-red-200 bg-red-50 text-red-700 p-2 rounded-lg text-sm sched-warning placeholder-red-300">
+        `;
+
+        row.querySelector('.sched-time').value = time;
+        row.querySelector('.sched-icon').value = icon;
+        row.querySelector('.sched-title').value = title;
+
+        // 💡 DB의 <br> 태그를 텍스트박스의 실제 줄바꿈(\n)으로 변환
+        let displayDetail = (detail || '').replace(/<br\s*[\/]?>/gi, '\n');
+        row.querySelector('.sched-detail').value = displayDetail;
+
+        row.querySelector('.sched-warning').value = warning;
+
+        container.appendChild(row);
+    }
+
+    function addEditPhotoRow(url = '', caption = '') {
+        const container = document.getElementById('editPhotoContainer');
+        const row = document.createElement('div');
+        row.className = 'flex gap-2 edit-photo-row mb-2';
+        row.innerHTML = `
+            <input type="text" placeholder="이미지 URL" class="w-1/2 border p-2 rounded-lg text-sm photo-url">
+            <input type="text" placeholder="사진 설명" class="w-1/2 border p-2 rounded-lg text-sm photo-caption">
+            <button type="button" onclick="this.parentElement.remove()" class="text-red-500 hover:bg-red-50 rounded px-2 font-bold transition-colors">X</button>
+        `;
+        row.querySelector('.photo-url').value = url;
+        row.querySelector('.photo-caption').value = caption;
+        container.appendChild(row);
+    }
+
+    async function openEditModal(id) {
+        try {
+            const response = await fetch(`/api/itinerary/${id}`);
+            if(!response.ok) throw new Error("데이터를 가져오지 못했습니다.");
+            const data = await response.json();
+
+            const form = document.getElementById('editItineraryForm');
+            form.action = '/admin/edit_itinerary/' + data.id;
+
+            // 텍스트 필드 데이터 채우기
+            form.id.value = data.id || '';
+            form.city.value = data.city || '';
+            form.period.value = data.period || '';
+            form.nights.value = data.nights || '';
+            form.stay.value = data.stay || '';
+            form.desc.value = data.desc || '';
+            form.tips.value = data.tips || '';
+            form.parkingInfo.value = data.parkingInfo || '';
+            form.foodRecs.value = data.foodRecs || '';
+            form.under10.value = data.under10 || '';
+            form.spotRecs.value = data.spotRecs || '';
+            form.shoppingRecs.value = data.shoppingRecs || '';
+            form.routeText.value = data.routeText || '';
+            form.mapLink.value = data.mapLink || '';
+            form.mapIframe.value = data.mapIframe || '';
+            form.routeText2.value = data.routeText2 || '';
+            form.mapLink2.value = data.mapLink2 || '';
+            form.mapIframe2.value = data.mapIframe2 || '';
+            form.hasParking.checked = data.hasParking;
+
+            // 상세 일정 불러오기 (icon, title, detail, warning 매핑)
+            const scheduleContainer = document.getElementById('editScheduleContainer');
+            scheduleContainer.innerHTML = '';
+            if (data.schedule && data.schedule.length > 0) {
+                data.schedule.forEach(item => {
+                    // 과거 데이터(text)와 현재 데이터(detail) 호환성 유지
+                    let detailVal = item.detail || item.text || '';
+                    addEditScheduleRow(
+                        item.time || '',
+                        item.icon || '',
+                        item.title || '',
+                        detailVal,
+                        item.warning || ''
+                    );
+                });
+            } else {
+                addEditScheduleRow();
+            }
+
+            // 갤러리 사진 불러오기
+            const photoContainer = document.getElementById('editPhotoContainer');
+            photoContainer.innerHTML = '';
+            if (data.photos && data.photos.length > 0) {
+                data.photos.forEach(item => {
+                    addEditPhotoRow(item.url || '', item.caption || item.title || '');
+                });
+            } else {
+                addEditPhotoRow();
+            }
+
+            document.getElementById('editItineraryModal').classList.remove('hidden');
+
+        } catch (error) {
+            alert("에러 발생: " + error.message);
+        }
+    }
+
+    // 대시보드 연동용 글로벌 선언
+    window.openEditModal = openEditModal;
+    window.openEditModalReal = openEditModal;
+
+    // ==========================================
+    // 4. 이벤트 리스너 (제출 시 JSON 변환)
+    // ==========================================
+    window.addEventListener('DOMContentLoaded', () => {
+        addScheduleRow();
+        addPhotoRow();
+    });
+
+    // 폼 제출 시 배열을 만들어 JSON으로 묶어주는 공통 로직
+    function extractScheduleData(rowSelector) {
+        let schedules = [];
+        document.querySelectorAll(rowSelector).forEach(row => {
+            let time = row.querySelector('.sched-time').value;
+            let icon = row.querySelector('.sched-icon').value;
+            let title = row.querySelector('.sched-title').value;
+            let detail = row.querySelector('.sched-detail').value;
+            let warning = row.querySelector('.sched-warning').value;
+
+            // 💡 줄바꿈(\n)을 다시 <br> 태그로 변환하여 저장
+            if (detail) detail = detail.replace(/\n/g, '<br>');
+
+            // 제목이나 내용이 하나라도 있으면 저장
+            if (time || title || detail) {
+                schedules.push({ time: time, icon: icon, title: title, detail: detail, warning: warning });
+            }
+        });
+        return JSON.stringify(schedules);
+    }
+
+    function extractPhotoData(rowSelector) {
+        let photos = [];
+        document.querySelectorAll(rowSelector).forEach(row => {
+            let url = row.querySelector('.photo-url').value;
+            let caption = row.querySelector('.photo-caption').value;
+            if (url) photos.push({ url: url, caption: caption });
+        });
+        return JSON.stringify(photos);
+    }
+
+    // 등록 폼 제출
+    document.getElementById('addItineraryForm').addEventListener('submit', function(e) {
+        document.getElementById('schedule_json').value = extractScheduleData('.schedule-row');
+        document.getElementById('photos_json').value = extractPhotoData('.photo-row');
+    });
+
+    // 수정 폼 제출
+    document.getElementById('editItineraryForm').addEventListener('submit', function(e) {
+        document.getElementById('edit_schedule_json').value = extractScheduleData('.edit-schedule-row');
+        document.getElementById('edit_photos_json').value = extractPhotoData('.edit-photo-row');
+    });
+
+</script>

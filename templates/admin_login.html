@@ -1,0 +1,46 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="flex justify-center mt-12 md:mt-24 px-4">
+    <div class="w-full max-w-md">
+        <div class="bg-white rounded-3xl shadow-xl p-8 md:p-10 border border-gray-100 border-t-4 border-t-orange-500">
+            <h3 class="text-2xl font-extrabold text-center text-gray-900 mb-8">⚙️ 관리자 로그인</h3>
+            
+            {% with messages = get_flashed_messages() %}
+                {% if messages %}
+                    {% for message in messages %}
+                        <div class="bg-red-50 text-red-600 border border-red-200 p-4 rounded-xl mb-6 text-sm font-bold text-center animate-fade-in-up" role="alert">
+                            {{ message }}
+                        </div>
+                    {% endfor %}
+                {% endif %}
+            {% endwith %}
+
+            <form method="POST" action="{{ url_for('admin_login') }}" class="space-y-5">
+                <div>
+                    <label for="username" class="block text-sm font-bold text-gray-700 mb-2">아이디</label>
+                    <input type="text" id="username" name="username" required autofocus
+                           class="w-full px-4 py-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-orange-500 focus:border-orange-500 outline-none transition-colors bg-gray-50 focus:bg-white text-gray-900 placeholder-gray-400">
+                </div>
+                <div>
+                    <label for="password" class="block text-sm font-bold text-gray-700 mb-2">비밀번호</label>
+                    <input type="password" id="password" name="password" required
+                           class="w-full px-4 py-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-orange-500 focus:border-orange-500 outline-none transition-colors bg-gray-50 focus:bg-white text-gray-900 placeholder-gray-400">
+                </div>
+                
+                <div class="pt-4">
+                    <button type="submit" class="w-full bg-orange-600 hover:bg-orange-700 text-white font-extrabold py-3.5 px-4 rounded-xl transition-colors shadow-md text-lg flex justify-center items-center gap-2">
+                        <span>로그인</span>
+                    </button>
+                </div>
+            </form>
+            
+            <div class="text-center mt-8 pt-6 border-t border-gray-100">
+                <a href="/" class="text-sm text-gray-500 hover:text-orange-600 font-medium transition-colors inline-flex items-center gap-1">
+                    <span>←</span> 사용자 첫 화면으로 돌아가기
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

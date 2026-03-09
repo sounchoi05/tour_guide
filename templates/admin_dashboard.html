@@ -1,0 +1,147 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-8">
+
+    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center border-b-2 border-gray-200 pb-5 mb-8 gap-4">
+        <h2 class="text-2xl md:text-3xl font-extrabold text-gray-900 flex items-center gap-2">
+            <span>⚙️</span> 스페인 일정 관리 대시보드
+        </h2>
+        <div class="flex items-center gap-2">
+            <a href="/" class="bg-white border border-gray-300 text-gray-700 hover:bg-gray-50 px-4 py-2.5 rounded-full text-sm font-bold transition-colors shadow-sm hidden sm:block">
+                🏠 사용자 화면
+            </a>
+            <button onclick="openPasswordModal()" class="bg-gray-50 text-gray-700 border border-gray-200 hover:bg-gray-100 px-4 py-2.5 rounded-full text-sm font-bold transition-colors shadow-sm">
+                🔑 비번 변경
+            </button>
+            <a href="{{ url_for('admin_logout') }}" class="bg-red-50 text-red-600 border border-red-100 hover:bg-red-100 px-4 py-2.5 rounded-full text-sm font-bold transition-colors shadow-sm">
+                로그아웃
+            </a>
+        </div>
+    </div>
+
+    <div class="flex border-b border-gray-200 mb-8">
+        <a href="/admin/dashboard" class="py-3 px-6 text-orange-600 border-b-4 border-orange-600 font-extrabold bg-orange-50/50 rounded-t-lg">
+            📍 스페인 일정 관리
+        </a>
+        <a href="/admin/audio" class="py-3 px-6 text-gray-500 font-bold hover:text-blue-600 transition-colors">
+            🎧 오디오 가이드 관리
+        </a>
+        <a href="/admin/phrase" class="py-3 px-6 text-gray-500 font-bold hover:text-indigo-600 transition-colors whitespace-nowrap">
+        🗣️ 생존 회화 관리
+        </a>
+		<a href="/admin/settings" class="py-3 px-6 text-gray-500 font-bold hover:text-indigo-600 transition-colors whitespace-nowrap">⚙️ 앱 기본 설정</a>
+    </div>
+    <div class="mb-6 flex justify-between items-end">
+        <h4 class="text-xl font-bold text-gray-800">📁 등록된 여행 일정 현황</h4>
+        <button onclick="openItineraryModal()" class="bg-orange-600 hover:bg-orange-700 text-white px-4 py-2 rounded-lg text-sm font-bold shadow-md transition-colors">
+            + 새 도시 일정 추가
+        </button>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-16">
+        {% for item in itineraries %}
+        <div class="bg-white rounded-2xl shadow-sm border border-gray-100 hover:shadow-lg transition-shadow duration-300 overflow-hidden flex flex-col">
+            <div class="bg-gray-50 border-b border-gray-100 p-4 flex justify-between items-center">
+                <div class="font-extrabold text-lg text-orange-700 flex items-center gap-2">
+                    <span>📍</span> {{ item.city }}
+                </div>
+                <span class="bg-orange-100 text-orange-800 text-xs px-2.5 py-1 rounded-full font-bold">
+                    {{ item.nights }}
+                </span>
+            </div>
+
+            <div class="p-5 flex-1">
+                <p class="text-sm font-medium text-gray-500 mb-3">
+                    <i class="far fa-calendar-alt mr-1"></i> {{ item.period }}
+                </p>
+                <div class="text-sm text-gray-700 line-clamp-2 mb-4">
+                    {{ item.desc | safe }}
+                </div>
+
+                <div class="flex items-center gap-2 text-xs font-bold">
+                    {% if item.hasParking %}
+                        <span class="bg-blue-50 text-blue-600 px-2 py-1 rounded border border-blue-100">🅿️ 주차장 있음</span>
+                    {% else %}
+                        <span class="bg-gray-100 text-gray-500 px-2 py-1 rounded border border-gray-200">대중교통 권장</span>
+                    {% endif %}
+                </div>
+            </div>
+
+            <div class="p-4 border-t border-gray-50 bg-white flex justify-end gap-2">
+                <button onclick="openEditModal('{{ item.id }}')" class="text-indigo-600 bg-indigo-50 hover:bg-indigo-100 px-3 py-1.5 rounded-lg text-sm font-bold transition-colors">
+                    수정
+                </button>
+                <a href="/admin/delete_itinerary/{{ item.id }}" onclick="return confirm('{{ item.city }} 일정을 정말 삭제하시겠습니까?')" class="text-red-600 bg-red-50 hover:bg-red-100 px-3 py-1.5 rounded-lg text-sm font-bold transition-colors">
+                    삭제
+                </a>
+            </div>
+        </div>
+        {% else %}
+        <div class="col-span-full bg-gray-50 rounded-2xl border-2 border-dashed border-gray-300 p-10 text-center">
+            <p class="text-gray-500 font-medium mb-2">등록된 여행 일정이 없습니다.</p>
+            <p class="text-sm text-gray-400">우측 상단의 '새 도시 일정 추가' 버튼을 눌러 일정을 등록해 보세요.</p>
+        </div>
+        {% endfor %}
+    </div>
+
+</div>
+
+{% include "_modals.html" ignore missing %}
+<div id="passwordModal" class="fixed inset-0 z-[2000] hidden bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="bg-white w-full max-w-sm rounded-3xl shadow-2xl overflow-hidden animate-fade-in-up">
+        <div class="bg-gray-800 p-5 flex justify-between items-center text-white">
+            <h3 class="text-lg font-bold flex items-center gap-2"><span>🔑</span> 관리자 비밀번호 변경</h3>
+            <button onclick="closePasswordModal()" class="text-2xl font-bold hover:text-orange-400 transition-colors">&times;</button>
+        </div>
+        <form action="/admin/change_password" method="POST" class="p-6 space-y-4">
+            <div>
+                <label class="block text-xs font-bold text-gray-500 mb-1 uppercase">현재 비밀번호</label>
+                <input type="password" name="current_password" required autofocus class="w-full border border-gray-200 rounded-xl p-3 bg-gray-50 focus:bg-white focus:ring-2 focus:ring-gray-800 outline-none transition-all">
+            </div>
+            <div>
+                <label class="block text-xs font-bold text-gray-500 mb-1 uppercase">새 비밀번호</label>
+                <input type="password" name="new_password" required minlength="4" class="w-full border border-gray-200 rounded-xl p-3 bg-gray-50 focus:bg-white focus:ring-2 focus:ring-blue-500 outline-none transition-all">
+            </div>
+            <div>
+                <label class="block text-xs font-bold text-gray-500 mb-1 uppercase">새 비밀번호 확인</label>
+                <input type="password" name="confirm_password" required minlength="4" class="w-full border border-gray-200 rounded-xl p-3 bg-gray-50 focus:bg-white focus:ring-2 focus:ring-blue-500 outline-none transition-all">
+            </div>
+            <div class="pt-4 flex gap-2">
+                <button type="button" onclick="closePasswordModal()" class="w-1/3 bg-gray-100 text-gray-700 font-bold py-3 rounded-xl hover:bg-gray-200 transition-all">취소</button>
+                <button type="submit" class="w-2/3 bg-gray-800 text-white font-black py-3 rounded-xl shadow-lg hover:bg-black transition-all">변경하기</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+    function openPasswordModal() {
+        document.getElementById('passwordModal').classList.remove('hidden');
+    }
+    function closePasswordModal() {
+        document.getElementById('passwordModal').classList.add('hidden');
+    }
+    // 배경 클릭 시 모달 닫기
+    document.getElementById('passwordModal').addEventListener('click', function(e) {
+        if (e.target === this) closePasswordModal();
+    });
+</script>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    // 💡 기존의 alert 함수를 지우고 아래 내용으로 교체합니다.
+    function openEditModal(id) {
+        // _modals.html에 있는 실제 수정 로직 함수를 호출합니다.
+        // 만약 _modals.html의 함수명이 openEditModal로 동일하다면
+        // 중복 정의를 피하기 위해 이 블록의 함수를 아예 삭제해도 무방합니다.
+        if (typeof window.openEditModalReal === 'function') {
+            window.openEditModalReal(id);
+        } else {
+            // _modals.html 파일의 스크립트가 로드되었는지 확인하며 직접 호출
+            openEditModalImplementation(id);
+        }
+    }
+</script>
+{% endblock %}
