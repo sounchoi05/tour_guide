@@ -1,0 +1,5 @@
+<resources>
+    <string name="app_name">Tour Guide AOS</string>
+    <string name="home">홈으로 이동</string>
+    <string name="loading_failed">페이지 로딩 실패: %1$s</string>
+</resources>
